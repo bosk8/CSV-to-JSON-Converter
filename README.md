@@ -10,6 +10,10 @@ A lightweight, dependency-free Python CLI tool to convert CSV files to formatted
 - **Robust Error Handling**: Clear error messages for common issues
 - **File Size Validation**: Built-in 10MB file size limit
 - **Dependency-Free**: Uses only Python standard library
+- **Dynamic Delimiter Support**: Auto-detects common delimiters or accepts a custom one.
+- **Selective Column Conversion**: Choose which columns to include in the output.
+- **Automatic Type Inference**: Automatically converts numbers and booleans to their correct types.
+
 
 ## Installation
 
@@ -41,6 +45,9 @@ python src/csv_to_json.py -i input.csv --no-pretty
 - `-i, --input`: Input CSV file path (required)
 - `-o, --output`: Output JSON file path (optional, defaults to stdout)
 - `--no-pretty`: Disable pretty JSON formatting (output compact JSON)
+- `-d, --delimiter`: CSV delimiter (optional, defaults to auto-detect)
+- `-c, --columns`: Comma-separated list of columns to include (optional)
+- `--infer-types`: Automatically infer data types (e.g., numbers, booleans)
 - `-h, --help`: Show help message
 
 ### Examples
@@ -54,13 +61,22 @@ python src/csv_to_json.py -i data.csv -o result.json
 
 # Compact output to file
 python src/csv_to_json.py -i data.csv -o result.json --no-pretty
+
+# Use a specific delimiter
+python src/csv_to_json.py -i data.tsv -d "\\t"
+
+# Select specific columns
+python src/csv_to_json.py -i data.csv -c "name,city"
+
+# Infer data types
+python src/csv_to_json.py -i data.csv --infer-types
 ```
 
 ## Input Format
 
 The tool expects CSV files with:
 - Headers in the first row
-- Comma-separated values
+- Comma-separated values (or other delimiter)
 - UTF-8 encoding (recommended)
 
 ### Example CSV Input
@@ -105,9 +121,7 @@ The tool provides clear error messages for common issues:
 ## Limitations
 
 - Maximum file size: 10MB
-- All values are treated as strings (no type conversion)
 - Requires headers in the first row
-- Uses comma as the delimiter
 
 ## Requirements
 

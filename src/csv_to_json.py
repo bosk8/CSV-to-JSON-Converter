@@ -20,11 +20,12 @@ def main():
     
     try:
         # Parse CSV file
-        csv_data = parse_csv(args.input)
+        columns = args.columns.split(',') if args.columns else None
+        csv_data = parse_csv(args.input, args.delimiter, columns)
         
         # Convert to JSON (pretty formatting unless --no-pretty is specified)
         pretty_format = not args.no_pretty
-        json_output = convert_to_json(csv_data, pretty_format)
+        json_output = convert_to_json(csv_data, pretty_format, args.infer_types)
         
         # Output JSON
         output_json(json_output, args.output)
@@ -79,15 +80,52 @@ Examples:
         help='Disable pretty JSON formatting (output compact JSON)'
     )
     
+    parser.add_argument(
+        '-d', '--delimiter',
+        help='CSV delimiter (default: auto-detect)'
+    )
+
+    parser.add_argument(
+        '-c', '--columns',
+        help='Comma-separated list of columns to include'
+    )
+
+    parser.add_argument(
+        '--infer-types',
+        action='store_true',
+        help='Automatically infer data types (e.g., numbers, booleans)'
+    )
+
     return parser
 
 
-def parse_csv(file_path):
+def detect_delimiter(file_path):
+    """
+    Detect CSV delimiter by sniffing the first few lines.
+
+    Args:
+        file_path (Path): Path to the CSV file
+
+    Returns:
+        str: Detected delimiter
+    """
+    with open(file_path, 'r', encoding='utf-8', newline='') as csvfile:
+        try:
+            dialect = csv.Sniffer().sniff(csvfile.read(1024))
+            return dialect.delimiter
+        except csv.Error:
+            # Default to comma if detection fails
+            return ','
+
+
+def parse_csv(file_path, delimiter=None, columns=None):
     """
     Parse CSV file and return list of dictionaries.
     
     Args:
         file_path (str): Path to the CSV file
+        delimiter (str, optional): CSV delimiter. Auto-detected if not provided.
+        columns (list, optional): List of column names to include.
         
     Returns:
         list: List of dictionaries where each dict represents a CSV row
@@ -107,11 +145,15 @@ def parse_csv(file_path):
     if input_path.stat().st_size > 10 * 1024 * 1024:  # 10MB
         raise ValueError("CSV file too large. Maximum size is 10MB.")
     
+    # Detect delimiter if not provided
+    if delimiter is None:
+        delimiter = detect_delimiter(input_path)
+
     csv_data = []
     
     try:
         with open(input_path, 'r', encoding='utf-8', newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
+            reader = csv.DictReader(csvfile, delimiter=delimiter)
             
             # Check if we have headers
             if not reader.fieldnames:
@@ -127,7 +169,18 @@ def parse_csv(file_path):
                 if len(row) != len(reader.fieldnames):
                     raise ValueError(f"Row {row_num} has inconsistent column count.")
                 
-                csv_data.append(row)
+                # Filter columns if specified
+                if columns:
+                    # Validate column names
+                    invalid_columns = set(columns) - set(reader.fieldnames)
+                    if invalid_columns:
+                        raise ValueError(f"Invalid column(s): {', '.join(invalid_columns)}")
+
+                    # Create a new dict with only the selected columns
+                    filtered_row = {col: row[col] for col in columns if col in row}
+                    csv_data.append(filtered_row)
+                else:
+                    csv_data.append(row)
         
         # Check if we have any data
         if not csv_data:
@@ -139,13 +192,44 @@ def parse_csv(file_path):
         raise csv.Error("Invalid CSV format.") from e
 
 
-def convert_to_json(csv_data, pretty=True):
+def _infer_type(value):
+    """
+    Infers the type of a string value.
+
+    Args:
+        value (str): The string value to inspect.
+
+    Returns:
+        int, float, bool, or str: The inferred type.
+    """
+    if not isinstance(value, str):
+        return value
+
+    # Try integer
+    if value.isdigit():
+        return int(value)
+
+    # Try float
+    try:
+        return float(value)
+    except ValueError:
+        pass
+
+    # Try boolean
+    if value.lower() in ('true', 'false'):
+        return value.lower() == 'true'
+
+    return value
+
+
+def convert_to_json(csv_data, pretty=True, infer_types=False):
     """
     Convert CSV data to JSON string.
     
     Args:
         csv_data (list): List of dictionaries representing CSV rows
         pretty (bool): Whether to format JSON with indentation
+        infer_types (bool): Whether to automatically infer data types
         
     Returns:
         str: JSON string representation of the CSV data
@@ -153,6 +237,9 @@ def convert_to_json(csv_data, pretty=True):
     Raises:
         TypeError: If data contains non-serializable types
     """
+    if infer_types:
+        csv_data = [{k: _infer_type(v) for k, v in row.items()} for row in csv_data]
+
     try:
         if pretty:
             return json.dumps(csv_data, indent=4, ensure_ascii=False)

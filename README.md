@@ -1,5 +1,7 @@
 # CSV to JSON Converter
 
+[![Python CI](https://github.com/bosk8/CSV-to-JSON-Converter/actions/workflows/ci.yml/badge.svg)](https://github.com/bosk8/CSV-to-JSON-Converter/actions/workflows/ci.yml)
+
 A lightweight, dependency-free Python CLI tool to convert CSV files to formatted JSON.
 
 ## Features
@@ -9,11 +11,11 @@ A lightweight, dependency-free Python CLI tool to convert CSV files to formatted
 - **Configurable Formatting**: Pretty-printed or compact JSON output
 - **Robust Error Handling**: Clear error messages for common issues
 - **File Size Validation**: Built-in 10MB file size limit
-- **Dependency-Free**: Uses only Python standard library
+- **Dependency-Free Core**: The core conversion logic uses only the Python standard library.
 
 ## Installation
 
-No installation required! Just ensure you have Python 3.6+ installed.
+The tool itself requires no installation. Just ensure you have Python 3.8+ installed.
 
 ```bash
 # Clone the repository
@@ -27,13 +29,13 @@ cd CSV-to-JSON-Converter
 
 ```bash
 # Convert CSV to JSON (output to stdout)
-python src/csv_to_json.py -i input.csv
+python src/cli.py -i input.csv
 
 # Convert CSV to JSON (output to file)
-python src/csv_to_json.py -i input.csv -o output.json
+python src/cli.py -i input.csv -o output.json
 
 # Compact JSON output (no pretty formatting)
-python src/csv_to_json.py -i input.csv --no-pretty
+python src/cli.py -i input.csv --no-pretty
 ```
 
 ### Command Line Options
@@ -43,76 +45,53 @@ python src/csv_to_json.py -i input.csv --no-pretty
 - `--no-pretty`: Disable pretty JSON formatting (output compact JSON)
 - `-h, --help`: Show help message
 
-### Examples
+## Development
+
+To contribute to this project, you'll need to set up a development environment.
+
+### Setup
 
 ```bash
-# Basic conversion
-python src/csv_to_json.py -i data.csv
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Save to file with pretty formatting
-python src/csv_to_json.py -i data.csv -o result.json
-
-# Compact output to file
-python src/csv_to_json.py -i data.csv -o result.json --no-pretty
+# Install development dependencies
+pip install pytest flake8 black mypy
 ```
 
-## Input Format
+### Running Tests
 
-The tool expects CSV files with:
-- Headers in the first row
-- Comma-separated values
-- UTF-8 encoding (recommended)
+To run the test suite:
 
-### Example CSV Input
-```csv
-name,age,city
-John,25,New York
-Jane,30,Los Angeles
-Bob,35,Chicago
+```bash
+# Make sure the virtual environment is activated
+PYTHONPATH=. pytest
 ```
 
-### Example JSON Output
-```json
-[
-    {
-        "name": "John",
-        "age": "25",
-        "city": "New York"
-    },
-    {
-        "name": "Jane",
-        "age": "30",
-        "city": "Los Angeles"
-    },
-    {
-        "name": "Bob",
-        "age": "35",
-        "city": "Chicago"
-    }
-]
+### Linting and Formatting
+
+This project uses `black` for formatting and `flake8` for linting.
+
+```bash
+# Format the code
+black .
+
+# Check for linting issues
+flake8 .
 ```
 
-## Error Handling
+### Static Analysis
 
-The tool provides clear error messages for common issues:
+This project uses `mypy` for static type checking.
 
-- **File not found**: `Error: CSV file not found.`
-- **Empty file**: `Error: No data found in CSV.`
-- **File too large**: `Error: CSV file too large. Maximum size is 10MB.`
-- **Invalid CSV format**: `Error: Invalid CSV format.`
-- **Inconsistent columns**: `Error: Row X has inconsistent column count.`
+```bash
+mypy src/
+```
 
-## Limitations
+## Continuous Integration
 
-- Maximum file size: 10MB
-- All values are treated as strings (no type conversion)
-- Requires headers in the first row
-- Uses comma as the delimiter
-
-## Requirements
-
-- Python 3.6 or higher
-- No external dependencies (uses only standard library)
+This repository uses GitHub Actions to automate testing, linting, and type checking for every push and pull request.
 
 ## License
 
@@ -120,8 +99,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Support
-
-If you encounter any issues or have questions, please open an issue on GitHub.
+Contributions are welcome! Please ensure that your changes pass all tests and linting checks before submitting a pull request.

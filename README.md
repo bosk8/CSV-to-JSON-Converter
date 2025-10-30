@@ -43,17 +43,36 @@ python src/csv_to_json.py -i input.csv --no-pretty
 - `--no-pretty`: Disable pretty JSON formatting (output compact JSON)
 - `-h, --help`: Show help message
 
-### Examples
+## Development
+
+### Setting Up the Environment
+
+To set up the development environment, run the following commands:
 
 ```bash
-# Basic conversion
-python src/csv_to_json.py -i data.csv
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+```
 
-# Save to file with pretty formatting
-python src/csv_to_json.py -i data.csv -o result.json
+### Running Quality Checks
 
-# Compact output to file
-python src/csv_to_json.py -i data.csv -o result.json --no-pretty
+This project uses `flake8` for linting, `black` for formatting, `mypy` for static type checking, and `pytest` for testing.
+
+To run all quality checks, use the following commands:
+
+```bash
+# Run linter
+flake8 .
+
+# Run formatter
+black .
+
+# Run static type checker
+mypy src/
+
+# Run tests
+pytest
 ```
 
 ## Input Format

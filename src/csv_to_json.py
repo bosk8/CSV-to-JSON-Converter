@@ -185,5 +185,5 @@ def output_json(json_string, output_path = None):
     except IOError as e:
         raise IOError(f"Unable to write to output file: {e}") from e
 
-if __name__ = = '__main__':
+if __name__ == '__main__':
     main()

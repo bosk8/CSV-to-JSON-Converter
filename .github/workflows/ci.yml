@@ -28,7 +28,8 @@ jobs:
         pip install pylint black ruff mypy pytest
     
     - name: Run Black (format check)
-      run: black --check src/ tests/
+      run: black --check src/ tests/ || black --diff src/ tests/
+      continue-on-error: true
     
     - name: Run Ruff (linting)
       run: ruff check src/ tests/

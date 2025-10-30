@@ -123,9 +123,16 @@ def parse_csv(file_path):
                 if not any(value.strip() for value in row.values() if value):
                     continue
                 
-                # Validate row has same number of fields as headers
-                if len(row) != len(reader.fieldnames):
-                    raise ValueError(f"Row {row_num} has inconsistent column count.")
+                # Validate row completeness (check for None values which indicate missing columns)
+                # csv.DictReader fills missing columns with None, so we check for that
+                if None in row.values():
+                    # Count how many fields are missing
+                    missing_fields = [key for key, value in row.items() if value is None]
+                    if missing_fields:
+                        raise ValueError(
+                            f"Row {row_num} has inconsistent column count. "
+                            f"Missing fields: {', '.join(missing_fields)}"
+                        )
                 
                 csv_data.append(row)
         
